@@ -19,7 +19,7 @@ public class Counter {
         }
     }
 
-    public AtomicInteger getAtomicCounterRefreshChecked(long currentTimeInSeconds) {
+    public AtomicInteger getAtomicCounter(long currentTimeInSeconds) {
         refresh(currentTimeInSeconds);
         return atomicCounter;
     }

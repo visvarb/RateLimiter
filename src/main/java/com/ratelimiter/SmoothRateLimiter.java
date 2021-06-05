@@ -29,7 +29,7 @@ public class SmoothRateLimiter implements RateLimiter {
 
         //get previous and current counter
         AtomicInteger currentCounter = counterStore.getCounter(currentTimeSeconds);
-        AtomicInteger previousCounter = counterStore.getPreviousCounter(currentTimeSeconds);
+        AtomicInteger previousCounter = counterStore.getCounter(currentTimeSeconds - this.windowSizeInSeconds);
 
         double expectedCount = currentCounter.get() + previousCounter.get() * forecastFactor;
 

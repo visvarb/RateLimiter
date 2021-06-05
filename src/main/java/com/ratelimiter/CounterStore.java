@@ -17,17 +17,11 @@ public class CounterStore {
 
     public AtomicInteger getCounter(long timeStampInSeconds) {
         long windowNumber = timeStampInSeconds / this.counterWindowInSeconds;
-        int index = (int ) windowNumber % STORE_SIZE;
-        Counter counter = counterLot[index];
-        long windowStartTimestamp = windowNumber * this.counterWindowInSeconds;
-        return counter.getAtomicCounterRefreshChecked(windowStartTimestamp);
-    }
-
-    public AtomicInteger getPreviousCounter(long timeStampInSeconds) {
-        long windowNumber = (timeStampInSeconds / this.counterWindowInSeconds) - 1;
         int index = (int) windowNumber % STORE_SIZE;
+
         Counter counter = counterLot[index];
+
         long windowStartTimestamp = windowNumber * this.counterWindowInSeconds;
-        return counter.getAtomicCounterRefreshChecked(windowStartTimestamp);
+        return counter.getAtomicCounter(windowStartTimestamp);
     }
 }
