@@ -40,7 +40,7 @@ public class SmoothRateLimiter implements RateLimiter {
         AtomicInteger currentCounter = this.counterLot[currentCounterIndex];
         AtomicInteger previousCounter = this.counterLot[prevCounterIndex];
 
-        //If currentCounter index has moved ahead rest the value in currentCounter before use
+        //If currentCounter index has moved ahead reset currentCounter to 0 before use
         if (this.lastRefreshedIndex != currentCounterIndex &&
                 currentCounter.compareAndSet(currentCounter.get(), 0)) {
             this.lastRefreshedIndex = currentCounterIndex;
