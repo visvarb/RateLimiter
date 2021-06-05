@@ -11,9 +11,7 @@ public class SmoothRateLimiter implements RateLimiter {
 
     private final int maxRequestsInWindow;
     private final CounterStore counterStore;
-    private final int BUFFER_SIZE = 5;
     private final int windowSizeInSeconds;
-    private volatile long lastRefreshedIndex;
 
     public SmoothRateLimiter(int maxRequestsInWindow, int windowSizeInSeconds) {
         this.windowSizeInSeconds = windowSizeInSeconds;
