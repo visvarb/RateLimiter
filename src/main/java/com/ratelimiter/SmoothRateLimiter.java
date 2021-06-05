@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class SmoothRateLimiter implements RateLimiter {
 
     private final int maxRequestsInWindow;
-    private final AtomicInteger[] counterLot;
+    private final CounterStore counterStore;
     private final int BUFFER_SIZE = 5;
     private final int windowSizeInSeconds;
     private volatile long lastRefreshedIndex;
@@ -18,10 +18,7 @@ public class SmoothRateLimiter implements RateLimiter {
     public SmoothRateLimiter(int maxRequestsInWindow, int windowSizeInSeconds) {
         this.windowSizeInSeconds = windowSizeInSeconds;
         this.maxRequestsInWindow = maxRequestsInWindow;
-        this.counterLot = new AtomicInteger[BUFFER_SIZE];
-
-        for (int index = 0; index < BUFFER_SIZE; index++)
-            counterLot[index] = new AtomicInteger(0);
+        this.counterStore = new CounterStore(windowSizeInSeconds);
     }
 
     @Override
@@ -32,19 +29,9 @@ public class SmoothRateLimiter implements RateLimiter {
         int currentWindowElapsedSeconds = (int) (currentTimeSeconds % this.windowSizeInSeconds);
         double forecastFactor = (this.windowSizeInSeconds - currentWindowElapsedSeconds) * 1d / this.windowSizeInSeconds;
 
-        //get index of counters associated with current minute
-        int currentCounterIndex = (int) (currentTimeSeconds / this.windowSizeInSeconds) % BUFFER_SIZE;
-        int prevCounterIndex = (int) (((currentTimeSeconds / this.windowSizeInSeconds) - 1) % BUFFER_SIZE);
-
         //get previous and current counter
-        AtomicInteger currentCounter = this.counterLot[currentCounterIndex];
-        AtomicInteger previousCounter = this.counterLot[prevCounterIndex];
-
-        //If currentCounter index has moved ahead reset currentCounter to 0 before use
-        if (this.lastRefreshedIndex != currentCounterIndex &&
-                currentCounter.compareAndSet(currentCounter.get(), 0)) {
-            this.lastRefreshedIndex = currentCounterIndex;
-        }
+        AtomicInteger currentCounter = counterStore.getCounter(currentTimeSeconds);
+        AtomicInteger previousCounter = counterStore.getPreviousCounter(currentTimeSeconds);
 
         double expectedCount = currentCounter.get() + previousCounter.get() * forecastFactor;
 
@@ -55,10 +42,5 @@ public class SmoothRateLimiter implements RateLimiter {
 
         currentCounter.incrementAndGet();
         return true;
-    }
-
-    public void print() {
-        for (int index = 0; index < BUFFER_SIZE; index++)
-            System.out.println(counterLot[index].get());
     }
 }
