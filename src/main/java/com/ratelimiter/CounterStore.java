@@ -3,27 +3,31 @@ package com.ratelimiter;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CounterStore {
-    private final int BUFFER_SIZE = 5;
+    private final int STORE_SIZE = 5;
     private final Counter[] counterLot;
     private final int counterWindowInSeconds;
 
     public CounterStore(int counterWindowInSeconds) {
 
         this.counterWindowInSeconds = counterWindowInSeconds;
-        this.counterLot = new Counter[BUFFER_SIZE];
-        for (int index = 0; index < BUFFER_SIZE;index++)
+        this.counterLot = new Counter[STORE_SIZE];
+        for (int index = 0; index < STORE_SIZE; index++)
             this.counterLot[index] = new Counter(0);
     }
 
     public AtomicInteger getCounter(long timeStampInSeconds) {
-        int index = (int) (timeStampInSeconds / this.counterWindowInSeconds) % BUFFER_SIZE;
+        long windowNumber = timeStampInSeconds / this.counterWindowInSeconds;
+        int index = (int ) windowNumber % STORE_SIZE;
         Counter counter = counterLot[index];
-        return counter.getAtomicCounter(timeStampInSeconds);
+        long windowStartTimestamp = windowNumber * this.counterWindowInSeconds;
+        return counter.getAtomicCounterRefreshChecked(windowStartTimestamp);
     }
 
     public AtomicInteger getPreviousCounter(long timeStampInSeconds) {
-        int index = (int) ((timeStampInSeconds / this.counterWindowInSeconds) - 1) % BUFFER_SIZE;
+        long windowNumber = (timeStampInSeconds / this.counterWindowInSeconds) - 1;
+        int index = (int) windowNumber % STORE_SIZE;
         Counter counter = counterLot[index];
-        return counter.getAtomicCounter(timeStampInSeconds);
+        long windowStartTimestamp = windowNumber * this.counterWindowInSeconds;
+        return counter.getAtomicCounterRefreshChecked(windowStartTimestamp);
     }
 }

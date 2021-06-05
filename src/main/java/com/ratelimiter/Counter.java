@@ -12,13 +12,14 @@ public class Counter {
     }
 
     private void refresh(long currentTimeInSeconds) {
+
         if (this.lastRefreshedTimeInSeconds != currentTimeInSeconds &&
                 atomicCounter.compareAndSet(atomicCounter.get(), 0)) {
             this.lastRefreshedTimeInSeconds = currentTimeInSeconds;
         }
     }
 
-    public AtomicInteger getAtomicCounter(long currentTimeInSeconds) {
+    public AtomicInteger getAtomicCounterRefreshChecked(long currentTimeInSeconds) {
         refresh(currentTimeInSeconds);
         return atomicCounter;
     }
